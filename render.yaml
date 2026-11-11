@@ -1,0 +1,21 @@
+# Blueprint Render: Dashboard → New → Blueprint → seleziona il repository GitHub.
+# Il database NON è su Render (il Postgres gratuito di Render scade dopo 30 giorni): usa Neon (gratis, permanente, con pgvector).
+services:
+  - type: web
+    name: workspace-ai
+    runtime: docker
+    plan: free
+    region: frankfurt
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL        # stringa di connessione Neon
+        sync: false
+      - key: GEMINI_API_KEY      # da https://aistudio.google.com/apikey
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOW_SIGNUP        # registrazioni chiuse (il primo account resta sempre creabile)
+        value: "false"
+      - key: GEMINI_MODEL
+        value: gemini-flash-latest   # se Google lo ritira, l app sceglie da sola il Flash piu recente
