@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workspace AI – demo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+<style>
+:root{--bg:#f8fafc;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--acc:#4f46e5;--accs:#eef2ff}
+*{box-sizing:border-box}body{margin:0;font:14.5px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+aside{background:#fff;border-right:1px solid var(--line);padding:16px 12px}
+.logo{font-weight:700;font-size:18px;display:flex;gap:8px;align-items:center;margin-bottom:16px}.logo i{width:28px;height:28px;border-radius:8px;background:var(--acc);display:inline-block}
+.lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin:12px 6px 6px}
+.proj{display:block;width:100%;text-align:left;padding:8px 10px;border-radius:8px;border:0;background:none;font:inherit;cursor:pointer;color:var(--ink)}.proj.on{background:var(--accs);color:var(--acc);font-weight:600}
+main{padding:18px;min-width:0}
+h1{margin:0;font-size:22px}.muted{color:var(--muted)}.small{font-size:13px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:14px 0;overflow-x:auto}.tab{border:0;background:none;padding:9px 13px;font:inherit;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap}.tab.on{color:var(--acc);border-color:var(--acc);font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.card h2{margin:0 0 8px;font-size:16px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}.kpi b{display:block;font-size:22px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:8px 14px;font:600 14px system-ui;cursor:pointer}.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);font-weight:500}
+table{border-collapse:collapse;width:100%;font-size:13.5px}td,th{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left}th{color:var(--muted);font-weight:600}td.n,th.n{text-align:right}
+.scroll{overflow-x:auto}
+.msgs{display:flex;flex-direction:column;gap:10px;min-height:260px;max-height:55vh;overflow:auto;padding:4px}
+.m{max-width:85%;padding:9px 12px;border-radius:12px}.m.u{align-self:flex-end;background:var(--acc);color:#fff}.m.a{align-self:flex-start;background:#f1f5f9}
+.src{display:inline-block;background:var(--accs);color:var(--acc);border-radius:6px;padding:0 6px;font-size:12px;margin:0 2px;cursor:pointer}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 11px;font:inherit;font-size:13px;cursor:pointer}
+input[type=text],select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:#fff}
+input[type=range]{width:100%}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.doc{display:flex;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}
+.plot{width:100%;height:320px}
+.rep h3{margin:14px 0 4px}
+.tag{position:fixed;right:10px;bottom:10px;background:#b45309;color:#fff;font:600 12px system-ui;padding:4px 10px;border-radius:999px;z-index:5}
+.hidden{display:none}
+@media (max-width:820px){.app{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid var(--line)}.kpis{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+ <div class="logo"><i></i>Workspace AI</div>
+ <div class="lbl">Progetti</div>
+ <button class="proj on">🛒 Negozio online (esempio)</button>
+ <button class="proj" disabled style="opacity:.55">🏠 Ristrutturazione casa</button>
+ <button class="proj" disabled style="opacity:.55">📈 Piano marketing 2026</button>
+ <p class="small muted" style="margin:14px 6px">Nella demo è aperto un solo progetto d'esempio. Dati, documenti e conversazioni sono inventati.</p>
+</aside>
+<main>
+ <h1>Negozio online (esempio)</h1><div class="muted small">Vendite di articoli per la casa · 4 documenti · 1 dataset · aggiornato oggi</div>
+ <div class="tabs" id="tabs"></div>
+
+ <section data-p="Dashboard">
+  <div class="kpis" id="kpis"></div>
+  <div class="g2"><div class="card"><h2>Fatturato mensile</h2><div id="pRev" class="plot"></div></div><div class="card"><h2>Vendite per categoria</h2><div id="pCat" class="plot"></div></div></div>
+ </section>
+
+ <section data-p="Chat AI" class="hidden"><div class="card">
+  <h2>Chat con i documenti del progetto</h2><div class="small muted">Le risposte usano solo i documenti e citano la fonte. Nella demo le risposte sono già pronte.</div>
+  <div class="chips" id="qs"></div>
+  <div class="msgs" id="msgs"></div>
+  <div class="row" style="margin-top:8px"><input type="text" id="q" style="flex:1" placeholder="Scrivi una domanda…"><button class="btn" id="send">Invia</button></div>
+ </div></section>
+
+ <section data-p="Documenti" class="hidden"><div class="card"><h2>Documenti</h2><div id="docs"></div><p class="small muted">Formati accettati: PDF, Word, Excel, CSV, immagini (con OCR). Nella demo non si caricano file.</p></div></section>
+
+ <section data-p="Dataset" class="hidden"><div class="card"><h2>vendite_2025.csv <span class="muted small">· 365 righe · 5 colonne</span></h2><div class="scroll"><table id="ds"></table></div></div>
+  <div class="card"><h2>Statistiche descrittive</h2><div class="scroll"><table id="desc"></table></div></div></section>
+
+ <section data-p="Analisi" class="hidden">
+  <div class="card"><h2>Simulazione Monte Carlo — fatturato 2026</h2>
+   <div class="g2"><div>
+    <label class="small">Crescita media attesa: <b id="vG"></b></label><input type="range" id="g" min="-10" max="30" value="8">
+    <label class="small">Incertezza (deviazione standard): <b id="vS"></b></label><input type="range" id="s" min="2" max="30" value="10">
+    <label class="small">Scenari simulati: <b id="vN"></b></label><input type="range" id="n" min="1000" max="20000" step="1000" value="5000">
+    <div id="mcOut" style="margin-top:10px"></div>
+   </div><div id="pMc" class="plot"></div></div>
+  </div>
+  <div class="card"><h2>Previsione — prossimi 6 mesi</h2><div class="small muted">Media mobile con trend (Holt) sul fatturato mensile; banda al 80%.</div><div id="pFc" class="plot"></div></div>
+ </section>
+
+ <section data-p="Report" class="hidden"><div class="card rep" id="rep"></div><button class="btn ghost" id="dl">Scarica Markdown</button></section>
+</main>
+</div>
+<div class="tag">DEMO · dati fittizi</div>
+<script>
+const $=s=>document.querySelector(s);
+/* dataset deterministico */
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;const gauss=()=>{let u=0,v=0;while(!u)u=rnd();v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+const CAT=['Cucina','Tessili','Illuminazione','Decorazioni'],CH=['Sito','Marketplace','Social'];
+const rows=[];for(let d=0;d<365;d++){const dt=new Date(2025,0,1+d),m=dt.getMonth();const season=1+0.35*Math.sin((m-2)/12*2*Math.PI)+(m>=10?0.45:0);
+ const ord=Math.max(3,Math.round((14+d/40)*season+gauss()*3));const c=CAT[Math.floor(rnd()*4)],ch=CH[rnd()<.55?0:rnd()<.7?1:2];const sc=Math.round(ord*(38+gauss()*6)*(c==='Illuminazione'?1.4:1));
+ rows.push({data:`${dt.getFullYear()}-${String(m+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`,mese:m,categoria:c,canale:ch,ordini:ord,fatturato:sc})}
+const eur=v=>v.toLocaleString('it-IT',{maximumFractionDigits:0})+' €';
+const MESI=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+const monthly=MESI.map((_,m)=>rows.filter(r=>r.mese===m).reduce((a,r)=>a+r.fatturato,0));
+const tot=monthly.reduce((a,b)=>a+b,0),ordTot=rows.reduce((a,r)=>a+r.ordini,0);
+const L={margin:{l:50,r:10,t:10,b:40},paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{family:'system-ui',size:12},showlegend:false};
+const CFG={displayModeBar:false,responsive:true};
+const P=window.Plotly;const plot=(id,d,l)=>{if(P)P.react(id,d,Object.assign({},L,l),CFG);else $('#'+id).innerHTML='<p class="muted small">Grafico non disponibile senza connessione.</p>'};
+/* tabs */
+const TABS=['Dashboard','Chat AI','Documenti','Dataset','Analisi','Report'];const drawn={};
+$('#tabs').innerHTML=TABS.map(t=>`<button class="tab${t==='Dashboard'?' on':''}" data-t="${t}">${t}</button>`).join('');
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>go(b.dataset.t));
+function go(t){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.dataset.t===t));document.querySelectorAll('section').forEach(s=>s.classList.toggle('hidden',s.dataset.p!==t));if(!drawn[t]){drawn[t]=1;(INIT[t]||(()=>{}))()}}
+const INIT={
+ Dashboard(){const best=monthly.indexOf(Math.max(...monthly));
+  $('#kpis').innerHTML=[['Fatturato 2025',eur(tot)],['Ordini',ordTot.toLocaleString('it-IT')],['Scontrino medio',eur(tot/ordTot)],['Mese migliore',MESI[best]+' · '+eur(monthly[best])]].map(([a,b])=>`<div class="kpi"><span class="small muted">${a}</span><b>${b}</b></div>`).join('');
+  plot('pRev',[{x:MESI,y:monthly,type:'bar',marker:{color:'#4f46e5'}}],{});
+  const bc=CAT.map(c=>rows.filter(r=>r.categoria===c).reduce((a,r)=>a+r.fatturato,0));plot('pCat',[{x:bc,y:CAT,type:'bar',orientation:'h',marker:{color:['#4f46e5','#0ea5e9','#f59e0b','#10b981']}}],{margin:{l:100,r:10,t:10,b:40}})},
+ Dataset(){const cols=['data','categoria','canale','ordini','fatturato'];
+  $('#ds').innerHTML=`<tr>${cols.map(c=>`<th class="${c==='ordini'||c==='fatturato'?'n':''}">${c}</th>`).join('')}</tr>`+rows.slice(0,12).map(r=>`<tr>${cols.map(c=>`<td class="${typeof r[c]==='number'?'n':''}">${typeof r[c]==='number'?r[c].toLocaleString('it-IT'):r[c]}</td>`).join('')}</tr>`).join('')+'<tr><td colspan="5" class="muted small">… altre 353 righe</td></tr>';
+  const st=k=>{const v=rows.map(r=>r[k]).sort((a,b)=>a-b),mean=v.reduce((a,b)=>a+b,0)/v.length,sd=Math.sqrt(v.reduce((a,b)=>a+(b-mean)**2,0)/(v.length-1));return [mean,sd,v[0],v[Math.floor(v.length/2)],v[v.length-1]]};
+  $('#desc').innerHTML='<tr><th>colonna</th><th class="n">media</th><th class="n">dev. std</th><th class="n">min</th><th class="n">mediana</th><th class="n">max</th></tr>'+['ordini','fatturato'].map(k=>`<tr><td>${k}</td>${st(k).map(x=>`<td class="n">${x.toLocaleString('it-IT',{maximumFractionDigits:1})}</td>`).join('')}</tr>`).join('')},
+ Documenti(){$('#docs').innerHTML=DOCS.map(d=>`<div class="doc"><div><b>${d.n}</b><div class="small muted">${d.t} · ${d.p} · indicizzato per la ricerca</div></div><button class="btn ghost" onclick="alert('${d.n}\\n\\n${d.x.replace(/'/g,"\\'")}')">Anteprima</button></div>`).join('')},
+ Analisi(){['g','s','n'].forEach(k=>$('#'+k).oninput=mc);mc();
+  let lv=monthly[0],tr=monthly[1]-monthly[0];const a=.5,b=.3,fit=[lv];for(let i=1;i<12;i++){const pl=lv;lv=a*monthly[i]+(1-a)*(lv+tr);tr=b*(lv-pl)+(1-b)*tr;fit.push(lv)}
+  const res=monthly.map((y,i)=>y-fit[i]),sd=Math.sqrt(res.reduce((s,r)=>s+r*r,0)/11);const fx=['gen 26','feb 26','mar 26','apr 26','mag 26','giu 26'],fc=fx.map((_,h)=>lv+tr*(h+1)),w=fc.map((_,h)=>1.28*sd*Math.sqrt(h+1));
+  plot('pFc',[{x:MESI.map(m=>m+' 25'),y:monthly,mode:'lines+markers',line:{color:'#4f46e5'}},{x:fx,y:fc.map((v,i)=>v+w[i]),mode:'lines',line:{width:0}},{x:fx,y:fc.map((v,i)=>Math.max(0,v-w[i])),mode:'lines',line:{width:0},fill:'tonexty',fillcolor:'rgba(14,165,233,.18)'},{x:fx,y:fc,mode:'lines+markers',line:{color:'#0ea5e9',dash:'dash'}}],{})},
+ Report(){const best=monthly.indexOf(Math.max(...monthly));REP=`# Report – Negozio online (esempio)\n\n## Sintesi\n- Fatturato 2025: ${eur(tot)} su ${ordTot.toLocaleString('it-IT')} ordini (scontrino medio ${eur(tot/ordTot)}).\n- Mese migliore: ${MESI[best]} (${eur(monthly[best])}), trainato dalle festività.\n- L'illuminazione ha lo scontrino più alto (+40% rispetto alle altre categorie).\n\n## Rischi\n- Dipendenza dal quarto trimestre: novembre e dicembre valgono circa un quinto dell'anno.\n- Il contratto con il corriere scade il 31/03/2026 [Contratto logistica p. 2].\n\n## Raccomandazioni\n1. Anticipare le campagne di Natale a fine ottobre.\n2. Rinegoziare il corriere entro febbraio.\n3. Spingere l'illuminazione sul marketplace, dove oggi pesa poco.`;
+  $('#rep').innerHTML=REP.split('\n').map(l=>l.startsWith('# ')?`<h2>${l.slice(2)}</h2>`:l.startsWith('## ')?`<h3>${l.slice(3)}</h3>`:l.startsWith('- ')||/^\d\./.test(l)?`<div>• ${l.replace(/^(- |\d\. )/,'')}</div>`:l?`<p>${l}</p>`:'').join('')+'<p class="small muted">Report generato dall\'AI a partire da documenti e analisi del progetto (nella demo è un esempio già pronto).</p>'},
+ 'Chat AI'(){$('#qs').innerHTML=Object.keys(QA).map(q=>`<button class="chip">${q}</button>`).join('');document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>ask(b.textContent));
+  add('a','Ciao! Posso rispondere sui documenti di questo progetto. Prova una delle domande qui sopra.')}
+};
+let REP='';
+const DOCS=[{n:'Contratto logistica.pdf',t:'PDF',p:'4 pagine',x:'Corriere Esempio S.p.A. – tariffa 5,90 € a spedizione fino a 3 kg; scadenza 31/03/2026; preavviso di disdetta 60 giorni.'},
+ {n:'Listino fornitori 2025.xlsx',t:'Excel',p:'2 fogli',x:'Lampada Nordica: costo 24 €, prezzo 59 €. Set tovaglie Lino: costo 11 €, prezzo 29 €.'},
+ {n:'Piano marketing Q4.docx',t:'Word',p:'6 pagine',x:'Budget Q4: 8.000 €. 60% social, 30% marketplace, 10% newsletter. Campagna Natale dal 15 novembre.'},
+ {n:'Recensioni clienti.csv',t:'CSV',p:'420 righe',x:'Voto medio 4,4/5. Lamentele principali: tempi di consegna (31%), imballaggio (12%).'}];
+const QA={
+ 'Quando scade il contratto con il corriere?':'Il contratto con Corriere Esempio S.p.A. scade il <b>31/03/2026</b>, con preavviso di disdetta di 60 giorni: per cambiare corriere va comunicato entro fine gennaio. <span class="src">Contratto logistica p. 2</span>',
+ 'Qual è il prodotto con il margine più alto?':'Tra i prodotti del listino il margine più alto è della <b>Lampada Nordica</b>: costo 24 €, prezzo 59 €, margine 35 € (59%). <span class="src">Listino fornitori 2025 · Foglio1!B4</span>',
+ 'Di cosa si lamentano i clienti?':'Voto medio 4,4/5. Le lamentele principali sono i <b>tempi di consegna</b> (31% delle recensioni negative) e l\'<b>imballaggio</b> (12%). <span class="src">Recensioni clienti · riga 1–420</span> Questo è coerente con la scadenza del contratto logistico: è il momento giusto per rinegoziarlo. <span class="src">Contratto logistica p. 2</span>',
+ 'Quanto budget va ai social nel Q4?':'Il piano Q4 prevede 8.000 € di budget, di cui il <b>60% ai social (4.800 €)</b>. <span class="src">Piano marketing Q4 p. 3</span>'};
+function add(w,h){const d=document.createElement('div');d.className='m '+w;d.innerHTML=h;$('#msgs').appendChild(d);$('#msgs').scrollTop=1e9;return d}
+async function ask(q){if(!q.trim())return;add('u',q.replace(/</g,'&lt;'));$('#q').value='';const d=add('a','<span class="muted">Sto cercando nei documenti…</span>');await new Promise(r=>setTimeout(r,650));
+ const k=Object.keys(QA).find(x=>x===q)||Object.keys(QA).find(x=>x.toLowerCase().split(/\W+/).filter(w=>w.length>4).some(w=>q.toLowerCase().includes(w)));
+ d.innerHTML=k?QA[k]:'Nella demo rispondo solo alle domande d\'esempio. Nella versione completa Gemini cerca in tutti i documenti del progetto e cita le fonti; se l\'informazione non c\'è, lo dice.'}
+$('#send').onclick=()=>ask($('#q').value);$('#q').onkeydown=e=>{if(e.key==='Enter')ask($('#q').value)};
+function mc(){const g=+$('#g').value,s=+$('#s').value,n=+$('#n').value;$('#vG').textContent=g+'%';$('#vS').textContent=s+'%';$('#vN').textContent=n.toLocaleString('it-IT');
+ seed=99;const v=[];for(let i=0;i<n;i++)v.push(tot*(1+(g+s*gauss())/100));v.sort((a,b)=>a-b);const q=p=>v[Math.floor(p*(n-1))],pLoss=v.filter(x=>x<tot).length/n;
+ $('#mcOut').innerHTML=`<table><tr><td>Scenario pessimista (5%)</td><td class="n">${eur(q(.05))}</td></tr><tr><td><b>Mediana</b></td><td class="n"><b>${eur(q(.5))}</b></td></tr><tr><td>Scenario ottimista (95%)</td><td class="n">${eur(q(.95))}</td></tr><tr><td>Probabilità di fatturare meno del 2025</td><td class="n">${(pLoss*100).toFixed(1)}%</td></tr></table>`;
+ plot('pMc',[{x:v,type:'histogram',nbinsx:50,marker:{color:'#4f46e5'}}],{shapes:[{type:'line',x0:tot,x1:tot,yref:'paper',y0:0,y1:1,line:{color:'#ef4444',dash:'dot'}}],annotations:[{x:tot,yref:'paper',y:1,text:'2025',showarrow:false,font:{color:'#ef4444'}}]})}
+$('#dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([REP],{type:'text/markdown'}));a.download='report-negozio-demo.md';a.click()};
+go('Dashboard');
+</script>
+</body>
+</html>
